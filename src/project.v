@@ -2539,7 +2539,7 @@ module XOR_GATE_BUS_ONEHOT( input1,
    genvar n;
    generate
       for (n = 0 ; n < NrOfBits ; n = n + 1)
-         begin: bit
+         begin: bit_gen
          assign result[n] = (s_realInput1[n]&~(s_realInput2[n]))|
                             (~(s_realInput1[n])&s_realInput2[n]);
          end
