@@ -1,41 +1,45 @@
-![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg) ![](../../workflows/test/badge.svg) ![](../../workflows/fpga/badge.svg)
+![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg) ![](../../workflows/test/badge.svg)
 
-# Tiny Tapeout Verilog Project Template
+# UNA-2 System-on-Chip (CPU + Advanced GPU)
 
-- [Read the documentation for project](docs/info.md)
+The **UNA-2** is a custom System-on-Chip (SoC) designed specifically for Tiny Tapeout. It features a fully custom 8-bit CPU designed from scratch in Logisim, paired with an advanced Hardware Streaming GPU written in Verilog, designed to drive SPI displays at 60 FPS.
 
-## What is Tiny Tapeout?
+## CPU & GPU Coordination
 
-Tiny Tapeout is an educational project that aims to make it easier and cheaper than ever to get your digital and analog designs manufactured on a real chip.
+The UNA-2 utilizes a unique hybrid software-hardware architecture for rendering high-speed graphics on an external SPI display (like the ILI9341). Instead of relying on the CPU to calculate and draw every single pixel (which would be too slow for an 8-bit CPU), the CPU acts as the "Game Director", while the GPU acts as the "Heavy Lifter".
 
-To learn more and get started, visit https://tinytapeout.com.
+Communication between the CPU and GPU occurs via an internal 8-bit bidirectional data bus and a 4-bit command bus:
+- **BIDIROUT[7:0]**: Data payload bus.
+- **EXTERNALCNTRL[3:0]**: Hardware GPU Mode Selector.
 
-## Set up your Verilog project
+### The 3 GPU Operating Modes:
 
-1. Add your Verilog files to the `src` folder.
-2. Edit the [info.yaml](info.yaml) and update information about your project, paying special attention to the `source_files` and `top_module` properties. If you are upgrading an existing Tiny Tapeout project, check out our [online info.yaml migration tool](https://tinytapeout.github.io/tt-yaml-upgrade-tool/).
-3. Edit [docs/info.md](docs/info.md) and add a description of your project.
-4. Adapt the testbench to your design. See [test/README.md](test/README.md) for more information.
+1. **Mode 0 (VGA Shape Generation):** The GPU drives a VGA monitor natively.
+2. **Mode 1 (CPU Bit-Bang Mode):** The CPU assumes full manual control over the SPI pins. The CPU executes software routines to send initialization commands to the SD Card and the SPI Display, configuring their resolutions and color modes. Once initialization is complete, the CPU switches to Mode 2.
+3. **Mode 2 (High-Speed Hardware Video Streamer):** This is the flagship feature of the UNA-2. The GPU completely takes over the SPI bus. It generates a continuous 25MHz SPI clock in pure hardware. The GPU directly reads raw RGB565 video sectors from the MicroSD card (via MISO) and instantly pumps those pixels directly to the SPI Display (via MOSI). **Zero CPU overhead is required.**
 
-The GitHub action will automatically build the ASIC files using [OpenLane](https://www.zerotoasiccourse.com/terminology/openlane/).
+## Full Motion Video (FMV) Capabilities
 
-## Enable GitHub actions to build the results page
+Because of Mode 2, the UNA-2 is capable of playing **Full Motion Video (FMV)** games, similar to classic laserdisc games like *Dragon's Lair*. 
 
-- [Enabling GitHub Pages](https://tinytapeout.com/faq/#my-github-action-is-failing-on-the-pages-part)
+- **Resolution:** 240x144 (Scaled)
+- **Color Depth:** 16-bit (RGB565)
+- **Framerate:** ~45 to 60 FPS over a 25MHz SPI clock.
 
-## Resources
+### The Game Engine Loop
+When programming an FMV game on the UNA-2, the CPU executes the following loop:
+1. The CPU sets the SD card read pointer to a specific memory sector containing a pre-rendered video clip (e.g., an animation of the player swinging a sword).
+2. The CPU switches the GPU into **Mode 2**. The GPU autonomously streams the video clip to the screen in real-time.
+3. The CPU monitors player input (buttons) while the video is playing.
+4. Based on the player's timing, the CPU calculates the next video clip to play (e.g., if the player dodged, jump to Sector 500. If they failed, jump to Sector 800).
+5. The CPU commands the SD card to jump to the new sector, and the video branches seamlessly.
 
-- [FAQ](https://tinytapeout.com/faq/)
-- [Digital design lessons](https://tinytapeout.com/digital_design/)
-- [Learn how semiconductors work](https://tinytapeout.com/siliwiz/)
-- [Join the community](https://tinytapeout.com/discord)
-- [Build your design locally](https://www.tinytapeout.com/guides/local-hardening/)
+## External Hardware Requirements
+To fully utilize the UNA-2 chip, the following external hardware should be connected to the Tiny Tapeout PCB:
+* **MicroSD Card Breakout Board** (holding raw video data)
+* **ILI9341 SPI Display**
+* **Buttons / Joypad**
 
-## What next?
-
-- [Submit your design to the next shuttle](https://app.tinytapeout.com/).
-- Edit [this README](README.md) and explain your design, how it works, and how to test it.
-- Share your project on your social network of choice:
-  - LinkedIn [#tinytapeout](https://www.linkedin.com/search/results/content/?keywords=%23tinytapeout) [@TinyTapeout](https://www.linkedin.com/company/100708654/)
-  - Mastodon [#tinytapeout](https://chaos.social/tags/tinytapeout) [@matthewvenn](https://chaos.social/@matthewvenn)
-  - X (formerly Twitter) [#tinytapeout](https://twitter.com/hashtag/tinytapeout) [@tinytapeout](https://twitter.com/tinytapeout)
+## Credits
+* **CPU Architecture:** Zeenz123
+* **GPU & FMV Engine Verilog:** AI Assistant
