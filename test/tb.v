@@ -24,12 +24,18 @@ module tb ();
   wire [7:0] uio_oe;
 
   // Replace tt_um_una2_system with your module name:
-  tt_um_una2_system user_project (
+  
+`ifdef GL_TEST
+  wire vpwr = 1'b1;
+  wire vgnd = 1'b0;
+`endif
+
+tt_um_una2_system user_project (
 
       // Include power ports for the Gate Level test:
 `ifdef GL_TEST
-      .VPWR(1'b1),
-      .VGND(1'b0),
+      .VPWR(vpwr),
+      .VGND(vgnd),
 `endif
 
       .ui_in  (ui_in),    // Dedicated inputs
@@ -43,3 +49,4 @@ module tb ();
   );
 
 endmodule
+
