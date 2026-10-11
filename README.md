@@ -4,6 +4,9 @@
 
 The **UNA-2** is a custom System-on-Chip (SoC) designed specifically for Tiny Tapeout. It features a fully custom 8-bit CPU designed from scratch in Logisim, paired with an advanced Hardware Streaming GPU written in Verilog, designed to drive SPI displays at 60 FPS.
 
+👉 **[Launch Interactive Silicon Layout Viewer](https://Zeenz123.github.io/UNA-with-GPU-Chip/)**
+
+
 ## CPU & GPU Coordination
 
 The UNA-2 utilizes a unique hybrid software-hardware architecture for rendering high-speed graphics on an external SPI display (like the ILI9341). Instead of relying on the CPU to calculate and draw every single pixel (which would be too slow for an 8-bit CPU), the CPU acts as the "Game Director", while the GPU acts as the "Heavy Lifter".
